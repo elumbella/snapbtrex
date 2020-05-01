@@ -273,9 +273,9 @@ class Operations:
             shell=shell)
         stdout, stderr = p.communicate()
         if stdout:
-            self.trace(LOG_OUTPUT + stdout)
+            self.trace(LOG_OUTPUT + stdout.decode())
         if stderr:
-            self.trace(LOG_STDERR + stderr)
+            self.trace(LOG_STDERR + stderr.decode())
         if p.returncode != 0:
             raise RuntimeError("failed %s" % cmd_str)
         return stdout  # return the content
