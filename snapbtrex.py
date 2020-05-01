@@ -214,7 +214,7 @@ def _sorted_value(dirs):
     def poles(items):
         # Yield (items[0], items[1]), (items[1], items[2]), ... (items[n-1], items[n])
         rest = iter(items)
-        last = rest.next()
+        last = next(rest)
         for next in rest:
             yield (last, next)
             last = next
@@ -222,7 +222,7 @@ def _sorted_value(dirs):
     def all_but_last(items):
         # Yield items[0], ..., items[n-1]
         rest = iter(items)
-        last = rest.next()
+        last = next(rest)
         for x in rest:
             yield last
             last = x
@@ -237,7 +237,7 @@ def _sorted_value(dirs):
     # Keep going as long as there is anything to remove
     while len(candidates) > 1:
         # Get candidates ordered by timestamp (as v is monitonic in timestamp)
-        remain = sorted((v, k) for k, v in candidates.iteritems())
+        remain = sorted((v, k) for k, v in list(candidates.items()))
         # Find the "amount of information we loose by deleting the
         # latest of the pair"
         diffs = list((to_tf - frm_tf, frm, to)
@@ -250,7 +250,7 @@ def _sorted_value(dirs):
         yield mto
 
     # also, we must delete the last entry
-    yield candidates.iterkeys().next()
+    yield next(iter(list(candidates.keys())))
 
 
 def freespace(path):
@@ -440,8 +440,8 @@ class FakeOperations(DryOperations):
         del self.dirs[dir]
 
     def listdir(self):
-        self.trace("listdir() = %s", self.dirs.keys())
-        return self.dirs.iterkeys()
+        self.trace("listdir() = %s", list(self.dirs.keys()))
+        return iter(list(self.dirs.keys()))
 
     def listdir_path(self, target_path):
         dirs = ['20101201-030000', '20101201-040000', '20101201-050000' ]
@@ -659,20 +659,20 @@ def sync_cleandir(operations, target_dir, sync_keep):
 def log_trace(fmt, *args, **kwargs):
     tt = time.strftime(DATE_FORMAT, time.gmtime(None)) + ": "
     if args is not None:
-        print tt + (fmt % args)
+        print((tt + (fmt % args)))
     elif kwargs is not None:
-        print tt + (fmt % kwargs)
+        print((tt + (fmt % kwargs)))
     else:
-        print tt + fmt
+        print((tt + fmt))
 
 
 def default_trace(fmt, *args, **kwargs):
     if args is not None:
-        print fmt % args
+        print((fmt % args))
     elif kwargs is not None:
-        print fmt % kwargs
+        print((fmt % kwargs))
     else:
-        print fmt
+        print(fmt)
 
 
 def null_trace(fmt, *args, **kwargs):
@@ -688,7 +688,7 @@ def main(argv):
             def parse(cls, target_str):
                 import re
                 form = cls.format % \
-                    "|".join(x for x in cls.mods.iterkeys() if x is not None)
+                    "|".join(x for x in list(cls.mods.keys()) if x is not None)
                 m = re.match(form, target_str, re.IGNORECASE)
                 if m:
                     val, mod = m.groups()
@@ -696,14 +696,14 @@ def main(argv):
                 else:
                     raise "Invalid value: %s, expected: %s" % (target_str, form)
 
-            def __nonzero__(self):
+            def __bool__(self):
                 return True
 
             def __init__(self, value):
                 self.origin = value
 
             def __new__(cls, value=0):
-                if isinstance(value, (str, unicode)):
+                if isinstance(value, str):
                     value = UnitInt.parse(cls, value)
                 return super(UnitInt, cls).__new__(cls, value)
 
