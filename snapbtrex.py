@@ -214,9 +214,9 @@ def _sorted_value(dirs):
         # Yield (items[0], items[1]), (items[1], items[2]), ... (items[n-1], items[n])
         rest = iter(items)
         last = next(rest)
-        for next in rest:
-            yield (last, next)
-            last = next
+        for x in rest:
+            yield (last, x)
+            last = x
 
     def all_but_last(items):
         # Yield items[0], ..., items[n-1]
