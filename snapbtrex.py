@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
 # Author: Helge Jensen <hej@actua.dk>
@@ -148,7 +148,6 @@ import time
 import os
 import os.path
 import sys
-import statvfs
 import itertools
 
 DATE_FORMAT = '%Y%m%d-%H%M%S'  # date format used for directories to clean
