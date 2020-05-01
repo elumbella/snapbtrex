@@ -1,4 +1,7 @@
 # snapbtrex
+
+*This is a python3 version of the (original snapbtrex)[https://github.com/yoshtec/snapbtrex].*
+
 snapbtrex is a small utility that keeps snapshots of btrfs filesystems
 and optionally send it to a remote system.
 
