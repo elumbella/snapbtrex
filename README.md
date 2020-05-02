@@ -9,11 +9,12 @@ The script came originally from https://btrfs.wiki.kernel.org/index.php/SnapBtr 
 This is an extended version which is capable of transferring snapshots to remote
 systems.
 
-You can run it regularly (for example in a small script in
-cron.hourly or in crontab), or once in a while, to maintain an "interesting" (see
+You can run it regularly or once in a while, to maintain an "interesting" (see
 below) set of snapshots (backups). You may manually add or remove
 snapshots as you like, use `snapbtrex.DATE_FORMAT` (in GMT) as
 snapshot-name.
+
+Automation is achieved with systemd. Append `--setup` to your manual command together with `--interval INTERVAL` to create the appropriate systemd units.
 
 It will keep at most `--target-backups` snapshots and ensure that
 `--target-freespace` is available on the file-system by selecting
@@ -43,9 +44,8 @@ snapshots from a sending host to a receiving host via ssh. Using `--ssh-port`,
 you can specify the port on which such ssh connections will be 
 attempted. 
 
-Both hosts have to be prepared as in the setup instructions if
-you want to call the script via cronjob. You can always call snapbtrex
-as standalone script if you have appropriate rights.
+The receiving host has to be set up appropriately for this to work.
+You can always call snapbtrex as standalone script if you have appropriate rights.
 
 Specify your target host via  `--remote-host` and the directory with
 the `--remote-dir` options. Both options have to be present. The target directory
@@ -77,6 +77,7 @@ File: `/etc/sudoers.d/90_snapbtrrcv`
 
 Minimum content is this for receiving snapshots on a remote system:
 ```
+The receiving host has to be set up appropriately for this to work.
 snapbtr ALL=(root:nobody) NOPASSWD:NOEXEC: /bin/btrfs receive*
 ```
 
