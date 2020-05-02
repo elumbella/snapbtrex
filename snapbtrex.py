@@ -3,6 +3,7 @@
 #
 # Author: Helge Jensen <hej@actua.dk>
 # Author: Jonas von Malottki (yt) <yoshtec@gmx.net>
+# Author: Robert Goßmann <robert@gossmann.xyz>
 #
 # Version history:
 #
@@ -43,7 +44,7 @@ snapbtrex is a small utility that keeps snapshots of btrfs filesystems
 and optionally send it to a remote system.
 
 snapbtrex is hosted on github:
-https://github.com/yoshtec/snapbtrex
+https://github.com/elumbella/snapbtrex
 
 You can run it regularly (for example in a small script in
 cron.hourly), or once in a while, to maintain an "interesting" (see
@@ -748,7 +749,7 @@ def main(argv):
                 return float(now - age)
 
         parser = argparse.ArgumentParser(
-            description='keeps btrfs snapshots for backup, visit https://github.com/yoshtec/snapbtrex for more insight')
+            description='keeps btrfs snapshots for backup, visit https://github.com/elumbella/snapbtrex for more insight')
 
         parser.add_argument(
             '--path', '-p',
