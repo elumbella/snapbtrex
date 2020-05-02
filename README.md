@@ -58,7 +58,7 @@ root volume, or else btrfs might fail to receive snapshots.
 For transfer backups with ssh within an automated script (cronjob) you have to
 prepare the systems with the following steps.
 
-1\. create user `snapbtr` on both systems
+1\. create user `snapbtr` on the remote system
 ```sh
 sudo adduser snapbtr
 ```
@@ -94,23 +94,6 @@ If you want remote pruning of snapshots via `--remote-keep` option, then add thi
 ```
 snapbtr ALL=(root:nobody) NOPASSWD:NOEXEC: /bin/btrfs subvolume delete*
 ```
-
-4\. Create a sudoers include file on the sending machine
-
-File: `/etc/sudoers.d/90_snapbtrsnd`
-
-Contents:
-```
-snapbtr ALL=(root:nobody) NOPASSWD:NOEXEC: /bin/btrfs send*
-snapbtr ALL=(root:nobody) NOPASSWD:NOEXEC: /bin/btrfs subvolume*
-snapbtr ALL=(root:nobody) NOPASSWD:NOEXEC: /bin/btrfs filesystem sync*
-```
-Hint 1: For a more secure setup you should include the specific paths at the
-sudoers files.
-
-Hint 2: On some Linux flavors you might find the btrfs tools in `/sbin/btrfs`
-opposed to `/bin/btrfs`, the sudoers files have to reflect that. Try using `which btrfs` to find out the full path to your `btrfs`.
-
 
 ## Migrating from SnapBtr
 
