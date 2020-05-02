@@ -419,6 +419,7 @@ class FakeOperations(DryOperations):
                  remote_host=None,
                  remote_dir=None,
                  remote_keep=None,
+                 interval='daily',
                  dirs=None,
                  space=None,
                  snap_space=None):
@@ -426,6 +427,7 @@ class FakeOperations(DryOperations):
         self.remote_host=remote_host
         self.remote_dir=remote_dir
         self.remote_keep=remote_keep
+        self.interval=interval
         Operations.__init__(self, path=path, trace=trace)
         if dirs is None:
             dirs = {}
@@ -677,21 +679,36 @@ def setup(operations):
     remote_host = operations.remote_host
     remote_dir = operations.remote_dir
     remote_keep = operations.remote_keep
-    print(f'[Unit]')
-    print(f'Description=Execute snapbtrex')
-    print(f'')
-    print(f'[Service]')
-    print(f'User=snapbtr')
-    print(f'ExecStart=/usr/bin/snapbtrex --snap {subvol} \\')
-    print(f'    --path {path} \\')
-    print(f'    --target-backups {target} \\')
-    print(f'    --remote-host {remote_host} \\')
-    print(f'    --remote-dir {remote_dir} \\')
-    print(f'    --remote-keep {remote_keep} \\')
-    print(f'')
-    print(f'[Install]')
-    print(f'WantedBy=default.target')
+    interval = operations.interval
+    with open("snapbtrex.service", "w") as file:
+        file.write(f'[Unit]\n')
+        file.write(f'Description=Execute snapbtrex\n')
+        file.write(f'\n')
+        file.write(f'[Service]\n')
+        file.write(f'User=snapbtr\n')
+        file.write(f'ExecStart=/usr/bin/snapbtrex --snap {subvol} \\\n')
+        file.write(f'    --path {path} \\\n')
+        file.write(f'    --target-backups {target} \\\n')
+        file.write(f'    --remote-host {remote_host} \\\n')
+        file.write(f'    --remote-dir {remote_dir} \\\n')
+        file.write(f'    --remote-keep {remote_keep} \\\n')
+        file.write(f'\n')
+        file.write(f'[Install]\n')
+        file.write(f'WantedBy=default.target\n')
+        file.write(f'\n')
 
+    with open("snapbtrex.timer", "w") as file:
+        file.write(f'[Unit]\n')
+        file.write(f'Description=Run snapbtrex {interval}\n')
+        file.write(f'\n')
+        file.write(f'[Timer]\n')
+        file.write(f'OnCalendar={interval}\n')
+        file.write(f'Persistent=true\n')
+        file.write(f'\n')
+        file.write(f'[Install]\n')
+        file.write(f'WantedBy=timers.target\n')
+        file.write(f'\n')
+        
     sys.exit()
 
 def log_trace(fmt, *args, **kwargs):
@@ -937,13 +954,20 @@ def main(argv):
             dest='sync_keep',
             help='Cleanup local synced backups until N backups remain, if unset keep all locally synced backups')
 
-        setup_group = parser.add_mutually_exclusive_group(required=False)
+        setup_group = parser.add_argument_group(
+            title='Setup',
+            description='Set up systemd service and timer')
 
         setup_group.add_argument(
             '--setup',
-            required=False,
             help='Sets up systemd timers',
             action='store_true')
+
+        setup_group.add_argument(
+            '--interval',
+            metavar='INTERVAL',
+            dest='interval',
+            help='The interval in which backups will happen')
 
         pa = parser.parse_args(argv[1:])
         return pa, parser
@@ -975,6 +999,7 @@ def main(argv):
                 remote_host=pa.remote_host,
                 remote_dir=pa.remote_dir,
                 remote_keep=pa.remote_keep,
+                interval=pa.interval,
                 trace=trace)
         setup(operations)
 
