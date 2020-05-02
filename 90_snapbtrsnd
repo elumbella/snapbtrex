@@ -1,0 +1,4 @@
+snapbtr ALL=(root:nobody) NOPASSWD:NOEXEC: /bin/btrfs send*
+snapbtr ALL=(root:nobody) NOPASSWD:NOEXEC: /bin/btrfs subvolume*
+snapbtr ALL=(root:nobody) NOPASSWD:NOEXEC: /bin/btrfs filesystem sync*
+
