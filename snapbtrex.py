@@ -670,6 +670,7 @@ def sync_cleandir(operations, target_dir, sync_keep):
 
 
 def setup(operations):
+    import subprocess
     """ Set up systemd services and timers """
     trace = operations.trace
     trace("Writing systemd unit")
@@ -680,7 +681,8 @@ def setup(operations):
     remote_dir = operations.remote_dir
     remote_keep = operations.remote_keep
     interval = operations.interval
-    with open("snapbtrex.service", "w") as file:
+    tmpdir = "/tmp/"
+    with open(tmpdir + "snapbtrex.service", "w") as file:
         file.write(f'[Unit]\n')
         file.write(f'Description=Execute snapbtrex\n')
         file.write(f'\n')
@@ -697,7 +699,7 @@ def setup(operations):
         file.write(f'WantedBy=default.target\n')
         file.write(f'\n')
 
-    with open("snapbtrex.timer", "w") as file:
+    with open(tmpdir + "snapbtrex.timer", "w") as file:
         file.write(f'[Unit]\n')
         file.write(f'Description=Run snapbtrex {interval}\n')
         file.write(f'\n')
@@ -708,6 +710,9 @@ def setup(operations):
         file.write(f'[Install]\n')
         file.write(f'WantedBy=timers.target\n')
         file.write(f'\n')
+
+    subprocess.run(["sudo", "mv", tmpdir + "snapbtrex.service", "/etc/systemd/system/"])
+    subprocess.run(["sudo", "mv", tmpdir + "snapbtrex.timer", "/etc/systemd/system/"])
         
     sys.exit()
 
