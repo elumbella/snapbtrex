@@ -386,6 +386,9 @@ class Operations:
                 ]
         self.check_call(args, shell=True)
 
+    def setup(self):
+        return setup(self)
+
 # Allows to Simulate operations
 class DryOperations(Operations):
     def __init__(self, path, trace=None):
@@ -656,6 +659,11 @@ def sync_cleandir(operations, target_dir, sync_keep):
                     operations.unsnapx(os.path.join(target_dir, del_dir))
 
 
+def setup(operations, path):
+    """ Set up systemd services and timers """
+    trace = operations.trace
+
+
 def log_trace(fmt, *args, **kwargs):
     tt = time.strftime(DATE_FORMAT, time.gmtime(None)) + ": "
     if args is not None:
@@ -899,6 +907,14 @@ def main(argv):
             dest='sync_keep',
             help='Cleanup local synced backups until N backups remain, if unset keep all locally synced backups')
 
+        setup_group = parser.add_mutually_exclusive_group(required=False)
+
+        setup_group.add_argument(
+                '--setup',
+                required=False,
+                help='Sets up systemd timers',
+                action='store_true')
+
         pa = parser.parse_args(argv[1:])
         return pa, parser
 
@@ -941,11 +957,16 @@ def main(argv):
                 '20101201-080000': 8,
                 },
             space=5)
-    elif pa.dry_run:
+    if pa.dry_run:
         trace(" ## DRY RUN ##")
         trace(" ## DRY RUN ## Dry Run mode: disk-modifying operations are only displayed without execution")
         trace(" ## DRY RUN ##")
         operations = DryOperations(path=pa.path, trace=trace)
+    elif pa.setup:
+        trace(" ## SETUP ##")
+        trace(" ## SETUP ## Setting up systemd services and timers")
+        trace(" ## SETUP ##")
+        operations = FakeOperations(path=pa.path, trace=trace)
     else:
         operations = Operations(path=pa.path, trace=trace)
 
