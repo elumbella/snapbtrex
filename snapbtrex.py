@@ -386,9 +386,6 @@ class Operations:
                 ]
         self.check_call(args, shell=True)
 
-    def setup(self):
-        return setup(self)
-
 # Allows to Simulate operations
 class DryOperations(Operations):
     def __init__(self, path, trace=None):
@@ -418,9 +415,17 @@ class FakeOperations(DryOperations):
     def __init__(self,
                  path,
                  trace=None,
+                 target=None,
+                 remote_host=None,
+                 remote_dir=None,
+                 remote_keep=None,
                  dirs=None,
                  space=None,
                  snap_space=None):
+        self.target=target
+        self.remote_host=remote_host
+        self.remote_dir=remote_dir
+        self.remote_keep=remote_keep
         Operations.__init__(self, path=path, trace=trace)
         if dirs is None:
             dirs = {}
@@ -459,6 +464,9 @@ class FakeOperations(DryOperations):
     def freespace(self):
         self.trace("freespace() = %s", self.space)
         return self.space
+
+    def setup(self, path):
+        return setup(self, path)
 
 
 def cleandir(operations, targets):
@@ -659,10 +667,32 @@ def sync_cleandir(operations, target_dir, sync_keep):
                     operations.unsnapx(os.path.join(target_dir, del_dir))
 
 
-def setup(operations, path):
+def setup(operations):
     """ Set up systemd services and timers """
     trace = operations.trace
+    trace("Writing systemd unit")
+    subvol = operations.space
+    path = operations.path
+    target = operations.target
+    remote_host = operations.remote_host
+    remote_dir = operations.remote_dir
+    remote_keep = operations.remote_keep
+    print(f'[Unit]')
+    print(f'Description=Execute snapbtrex')
+    print(f'')
+    print(f'[Service]')
+    print(f'User=snapbtr')
+    print(f'ExecStart=/usr/bin/snapbtrex --snap {subvol} \\')
+    print(f'    --path {path} \\')
+    print(f'    --target-backups {target} \\')
+    print(f'    --remote-host {remote_host} \\')
+    print(f'    --remote-dir {remote_dir} \\')
+    print(f'    --remote-keep {remote_keep} \\')
+    print(f'')
+    print(f'[Install]')
+    print(f'WantedBy=default.target')
 
+    sys.exit()
 
 def log_trace(fmt, *args, **kwargs):
     tt = time.strftime(DATE_FORMAT, time.gmtime(None)) + ": "
@@ -910,10 +940,10 @@ def main(argv):
         setup_group = parser.add_mutually_exclusive_group(required=False)
 
         setup_group.add_argument(
-                '--setup',
-                required=False,
-                help='Sets up systemd timers',
-                action='store_true')
+            '--setup',
+            required=False,
+            help='Sets up systemd timers',
+            action='store_true')
 
         pa = parser.parse_args(argv[1:])
         return pa, parser
@@ -933,6 +963,20 @@ def main(argv):
             trace = log_trace
     else:
         trace = null_trace
+
+    if pa.setup:
+        trace(" ## SETUP ##")
+        trace(" ## SETUP ## Setting up systemd services and timers")
+        trace(" ## SETUP ##")
+        operations = FakeOperations(
+                space=pa.snap,
+                path=pa.path,
+                target=pa.target_backups,
+                remote_host=pa.remote_host,
+                remote_dir=pa.remote_dir,
+                remote_keep=pa.remote_keep,
+                trace=trace)
+        setup(operations)
 
     if pa.explain:
         sys.stdout.write(__doc__)
@@ -962,11 +1006,6 @@ def main(argv):
         trace(" ## DRY RUN ## Dry Run mode: disk-modifying operations are only displayed without execution")
         trace(" ## DRY RUN ##")
         operations = DryOperations(path=pa.path, trace=trace)
-    elif pa.setup:
-        trace(" ## SETUP ##")
-        trace(" ## SETUP ## Setting up systemd services and timers")
-        trace(" ## SETUP ##")
-        operations = FakeOperations(path=pa.path, trace=trace)
     else:
         operations = Operations(path=pa.path, trace=trace)
 
