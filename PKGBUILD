@@ -14,5 +14,7 @@ package() {
 	cd "snapbtrex"
 	chmod +x snapbtrex.py
 	sudo cp snapbtrex.py /usr/bin/snapbtrex
+	sudo adduser snapbtr
+	sudo cp 90_snapbtrsnd /etc/sudoers.d/
 }
 
